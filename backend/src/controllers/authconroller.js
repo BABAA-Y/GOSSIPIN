@@ -1,12 +1,12 @@
 import { genrateToken } from "../lib/utils.js";
-import User from "../models/user.js";
+import User from "../models/User.js";
 import bcrypt from 'bcryptjs'
 
 export const signup = async (req, res) => {
     const {fullName, email, password} = req.body;
 
     try {
-        if(!fullName, !email, !password){
+        if(!fullName || !email || !password){
             return res.status(400).json({message: "all fields are required"});
         }
 
@@ -50,7 +50,7 @@ export const signup = async (req, res) => {
             })
         }
         // # send a welcome email to user
-        
+
         else{
             res.status(400).json({
                 message: "invalid user data"
