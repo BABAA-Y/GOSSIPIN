@@ -1,5 +1,5 @@
 import { genrateToken } from "../lib/utils.js";
-import User from "../models/User.js";
+import User from "../models/user.js";
 import bcrypt from 'bcryptjs'
 
 export const signup = async (req, res) => {
