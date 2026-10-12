@@ -1,3 +1,5 @@
+import { sendWelcomeEmail } from "../emails/emailhandler.js";
+import { ENV } from "../lib/env.js";
 import { genrateToken } from "../lib/utils.js";
 import User from "../models/user.js";
 import bcrypt from 'bcryptjs'
@@ -39,22 +41,27 @@ export const signup = async (req, res) => {
         })
 
         if(newUser){
-            genrateToken(newUser._id, res)
-            await newUser.save()
+            const savedUser = await newUser.save()
+            genrateToken(savedUser._id, res)
             
             res.status(201).json({
-                id: newUser, 
+                _id: newUser._id, 
                 fullName: newUser.fullName,
                 email:newUser.email,
                 profilePic: newUser.profilePic
             })
-        }
         // # send a welcome email to user
 
-        else{
-            res.status(400).json({
-                message: "invalid user data"
-            })
+            try {
+                await sendWelcomeEmail(savedUser.email, savedUser.fullName, ENV.CLIENT_URL);
+
+            } catch (error) {
+                console.log("failed to send welcome email: ", error);
+                
+            }
+
+        }  else{
+            res.status(400).json({message: "invalid user data"})
         }
     } catch (error) {
         console.error("error in signup controller", error);
