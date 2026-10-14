@@ -1,9 +1,10 @@
 import { json } from "stream/consumers";
-import { sendWelcomeEmail } from "../emails/emailhandler.js";
+import { sendWelcomeEmail } from "./emails/emailhandler.js";
 import { ENV } from "../lib/env.js";
 import { genrateToken } from "../lib/utils.js";
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
+import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -114,3 +115,26 @@ export const logout = (_, res) => {
     res.status(500).json({ message: "internal server error" });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic } = req.body;
+    if(!profilePic) return res.status(400).json({message: "Profile Pic is required"})
+
+    const userId = req.user._Id
+
+    const uploadResponse = await cloudinary.uploader.upload(profilePic)
+
+    const updateUser = await User.findByIdAndUpdate(
+      userId, 
+      {profilePic:uploadResponse.secure_url}, 
+      {new:true}
+    );
+
+    res.status(200).json(updateUser);
+  } catch (error) {
+    console.log("Error in update profile: ", error);
+    res.status(500).json({message: "internal server error"});
+    
+  }
+}

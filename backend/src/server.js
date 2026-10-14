@@ -1,19 +1,23 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import path from "path"
+import cookieParser from 'cookie-parser'
 
 import authRoutes from "./routes/authroute.js"
 import messageRoutes from "./routes/messageroute.js"
 import { connectDB } from './lib/db.js'
 import { ENV } from './lib/env.js'
 
+
 dotenv.config();
 const app = express();
 const __dirname = path.resolve();
 
-app.use(express.json()) // req.body
 
 const PORT = ENV.PORT || 3000;
+
+app.use(express.json()) // req.body
+app.use(cookieParser())
 
 app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
