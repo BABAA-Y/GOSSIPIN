@@ -1,5 +1,5 @@
 import express from 'express';
-import { signup, login, logout, updateProfile } from '../controllers/authconroller.js';
+import { signup, login, logout, updateProfile } from '../controllers/authcontroller.js';
 import { protectRoute } from '../middleware/authMiddleware.js';
 import { arcjetProtection } from '../middleware/arcjetMiddleware.js';
 
