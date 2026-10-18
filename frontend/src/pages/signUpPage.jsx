@@ -104,7 +104,7 @@ function SignUpPage() {
                     {isSigningUp ? (
                       <LoaderIcon className="w-full h-5 animate-spin text-center" />
                     ) : (
-                      "Create ccount"
+                      "Create Account"
                     )}
                   </button>
                 </form>
