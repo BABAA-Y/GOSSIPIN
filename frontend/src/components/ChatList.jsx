@@ -2,16 +2,18 @@ import React, { useEffect } from "react";
 import UsersLoadingSkeleton from "./UsersLoadingSkeleton";
 import NoChatsFound from "./NoChatFound";
 import { useChatStore } from "../store/UseChatStore";
+import { useAuthStore } from "../store/UseAuthStore";
 
 function ChatList() {
   const { getMyChatPartners, chats, isUsersLoading, setSelectedUser } = useChatStore();
+  const { onlineUsers = [] } = useAuthStore();
 
   useEffect(() => {
     getMyChatPartners();
   }, [getMyChatPartners]);
 
   if (isUsersLoading) return <UsersLoadingSkeleton />;
-  if (chats.length === 0) return <NoChatsFound />
+  if (chats.length === 0) return <NoChatsFound />;
 
   return (
     <>
