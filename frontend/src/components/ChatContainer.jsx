@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { useChatStore } from "../store/UseChatStore";
 import { useAuthStore } from "../store/UseAuthStore";
-import ChatHeader from "./ChatHeader";
 import NoChatHistoryPlaceholder from "./NoChatHistoryPlaceholder";
 import MessageInput from "./MessageInput";
 import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
+import ChatHeader from "./chatHeader";
 
 function ChatContainer() {
   const { selectedUser, getMessagesByUserId, messages, isMessagesLoading } = useChatStore();
@@ -45,7 +45,7 @@ function ChatContainer() {
                     {msg.text && <p className="mt-2">{msg.text}</p>}
 
                     <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
-                      {new Date(msg.createdAt.toISOString().slice(11, 16))}
+                      {new Date(msg.createdAt).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}
                     </p>
                   </div>
                 </div>
