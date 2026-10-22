@@ -47,7 +47,7 @@ export const sendMessage = async (req, res) => {
     if (senderId.equals(receiverId)) {
       return res.status(400).json({message: "Cannot send messages to yourself. "});
     }
-    const reciverExists = await User.exists({_id: receiverId})
+    const receiverExists = await User.exists({_id: receiverId})
     if (!receiverExists) {
       return res.status(400).json({message: "Reciver not found. "});
     }

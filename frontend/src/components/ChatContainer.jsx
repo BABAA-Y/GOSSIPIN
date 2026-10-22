@@ -21,12 +21,12 @@ function ChatContainer() {
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         <ChatHeader />
         <div className="flex-1 p-6 overflow-auto py-8">
-          {messages.length && !isMessagesLoading > 0 ? (
+          {!isMessagesLoading && messages.length > 0 ? (
             <div className="max-w-3xl mx-auto space-y-6">
               {messages.map((msg) => (
                 <div
                   key={msg._id}
-                  className={`chat ${msg.senderId === authUser._id ? "chat_end" : "chat-start"}`}
+                  className={`chat ${msg.senderId === authUser._id ? "chat-end" : "chat-start"}`}
                 >
                   <div
                     className={`chat-bubble   relative ${
@@ -37,7 +37,7 @@ function ChatContainer() {
                   >
                     {msg.image && (
                       <img
-                        src="msg.img"
+                        src={msg.img}
                         alt="Shared"
                         className="rounded-lg h-48 object-cover"
                       />
