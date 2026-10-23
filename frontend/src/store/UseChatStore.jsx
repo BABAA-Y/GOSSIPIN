@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
+import { useAuthStore } from "./UseAuthStore";
 
 export const useChatStore = create((set, get) => ({
   allContacts: [],
@@ -38,22 +39,52 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get("/messages/chats");
       set({ chats: res.data });
     } catch (error) {
-        toast.error(error.response.data.message);
-    } finally{
-        set({ isUsersLoading: false });
+      toast.error(error.response.data.message);
+    } finally {
+      set({ isUsersLoading: false });
     }
   },
 
   getMessagesByUserId: async (userId) => {
-    set({isMessagesLoading: true})
+    set({ isMessagesLoading: true });
     try {
-      const res = await axiosInstance.get(`/messages/${userId}`)
-      set({messages: res.data })
+      const res = await axiosInstance.get(`/messages/${userId}`);
+      set({ messages: res.data });
     } catch (error) {
       toast.error(error.response?.data?.message || "something went wrong");
-    } finally{
-      set({isMessagesLoading: false})
-
+    } finally {
+      set({ isMessagesLoading: false });
     }
-  }
+  },
+
+  sendMessage: async (messageData) => {
+    const { selectedUser, messages } = get();
+    const { authUser } = useAuthStore.getState();
+
+    const tempId = `temp-${Date.now()}`;
+
+    const optimisticMessage = {
+      _id: tempId,
+      senderId: authUser._id,
+      reciverId: selectedUser._id,
+      text: messageData.text,
+      image: messageData.image,
+      createdAt: new Date().toISOString(),
+      isOptimistic: true,
+    };
+
+    set({ messages: [...messages, optimisticMessage] })
+
+    try {
+      const res = await axiosInstance.post(
+        `/messages/send/${selectedUser._id}`,
+        messageData,
+      );
+
+      set({ messages: [...messages, res.data] });
+    } catch (error) {
+      set({messages: messages})
+      toast.error(error.response?.data?.message || "something went wrong");
+    }
+  },
 }));
