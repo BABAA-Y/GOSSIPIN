@@ -4,7 +4,7 @@ import { useAuthStore } from "../store/UseAuthStore";
 import NoChatHistoryPlaceholder from "./NoChatHistoryPlaceholder";
 import MessageInput from "./MessageInput";
 import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
-import ChatHeader from "./chatHeader";
+import ChatHeader from "./ChatHeader";
 
 function ChatContainer() {
   const { selectedUser, getMessagesByUserId, messages, isMessagesLoading } = useChatStore();
