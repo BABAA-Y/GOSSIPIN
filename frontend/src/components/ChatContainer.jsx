@@ -7,16 +7,31 @@ import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
 import ChatHeader from "./ChatHeader";
 
 function ChatContainer() {
-  const { selectedUser, getMessagesByUserId, messages, isMessagesLoading } = useChatStore();
+  const {
+    selectedUser,
+    getMessagesByUserId,
+    messages,
+    isMessagesLoading,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
   const { authUser } = useAuthStore();
-  const messageEndRef = useRef(null)
+  const messageEndRef = useRef(null);
 
   useEffect(() => {
     if (selectedUser?._id) {
       getMessagesByUserId(selectedUser._id);
-    }
-  }, [selectedUser, getMessagesByUserId]);
+      subscribeToMessages();
 
+      // clean up
+      return () => unsubscribeFromMessages();
+    }
+  }, [
+    selectedUser,
+    getMessagesByUserId,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  ]);
 
   useEffect(() => {
     if (messageEndRef.current) {
@@ -53,15 +68,20 @@ function ChatContainer() {
                     {msg.text && <p className="mt-2">{msg.text}</p>}
 
                     <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
-                      {new Date(msg.createdAt).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}
+                      {new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
                   </div>
                 </div>
               ))}
 
-              <div ref={messageEndRef}/>
+              <div ref={messageEndRef} />
             </div>
-          ) : isMessagesLoading ? <MessagesLoadingSkeleton /> : (
+          ) : isMessagesLoading ? (
+            <MessagesLoadingSkeleton />
+          ) : (
             <NoChatHistoryPlaceholder name={selectedUser.fullName} />
           )}
         </div>
