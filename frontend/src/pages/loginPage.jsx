@@ -87,14 +87,14 @@ function LoginPage() {
                     {isLoggingIn ? (
                       <LoaderIcon className="w-full h-5 animate-spin text-center" />
                     ) : (
-                      "Sign Up"
+                      "Sign In"
                     )}
                   </button>
                 </form>
 
                 <div className="mt-6 text-center">
                   <Link to="/signup" className="auth-link">
-                    Don't have an account? SignIn
+                    Don't have an account? SignUp
                   </Link>
                 </div>
               </div>

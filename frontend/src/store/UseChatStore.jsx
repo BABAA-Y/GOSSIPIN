@@ -66,7 +66,7 @@ export const useChatStore = create((set, get) => ({
     const optimisticMessage = {
       _id: tempId,
       senderId: authUser._id,
-      reciverId: selectedUser._id,
+      receiverId: selectedUser._id,
       text: messageData.text,
       image: messageData.image,
       createdAt: new Date().toISOString(),
@@ -81,9 +81,11 @@ export const useChatStore = create((set, get) => ({
         messageData,
       );
 
-      set({ messages: [...messages, res.data] });
+      set({
+        messages: get().messages.map((m) => (m._id === tempId ? res.data : m)),
+      });
     } catch (error) {
-      set({ messages: messages });
+      set({ messages: get().messages.filter((m) => m._id !== tempId) });
       toast.error(error.response?.data?.message || "something went wrong");
     }
   },
@@ -94,10 +96,10 @@ export const useChatStore = create((set, get) => ({
 
     const socket = useAuthStore.getState().socket;
 
-    socket.on("newMessage", (newMessage) => {
-
-      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id
-      if(!isMessageSentFromSelectedUser) return;
+    socket?.on("newMessage", (newMessage) => {
+      const isMessageSentFromSelectedUser =
+        newMessage.senderId === selectedUser._id;
+      if (!isMessageSentFromSelectedUser) return;
       const currentMessages = get().messages;
       set({ messages: [...currentMessages, newMessage] });
 
@@ -114,6 +116,6 @@ export const useChatStore = create((set, get) => ({
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
-    socket.off("newMessage");
+    socket?.off("newMessage");
   },
 }));

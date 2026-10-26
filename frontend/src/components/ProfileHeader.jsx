@@ -33,11 +33,12 @@ function ProfileHeader() {
   };
 
   return (
-    <div className="p-6 border-b bg-slate-700/50 ">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <div className="p-6 border-b bg-slate-700/50">
+      <div className="flex items-center justify-between gap-2">
+        {/* Left side: Avatar + Username */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           {/* avatar */}
-          <div className="avatar online">
+          <div className="avatar online shrink-0">
             <button
               disabled={isUpdatingProfileImg}
               className={`size-14 rounded-full overflow-hidden relative group ${
@@ -60,9 +61,7 @@ function ProfileHeader() {
                   <Loader2Icon className="size-6 text-cyan-400 animate-spin" />
                 </div>
               ) : (
-                <div
-                  className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                >
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                   <span className="text-white text-xs">Change</span>
                 </div>
               )}
@@ -76,46 +75,48 @@ function ProfileHeader() {
               className="hidden"
             />
           </div>
+
           {/* username and online text */}
-          <div>
-            <h3 className="text-slate-200 font-medium text-base max-w-[180px] truncate">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-slate-200 font-medium text-base truncate">
               {authUser.fullName}
             </h3>
-
             <p className="text-slate-400 text-xs">Online</p>
           </div>
+        </div>
 
-          {/* buttons */}
-          <div className="flex gap-4 items-center ml-20">
-            {/* LOGOUT BTN */}
-            <button
-              className="text-slate-400 hover:text-slate-200 transition-colors"
-              onClick={logout}
-            >
-              <LogOutIcon className="size-5" />
-            </button>
+        {/* Right side: Action Buttons */}
+        <div className="flex gap-3 items-center shrink-0">
+          {/* LOGOUT BTN */}
+          <button
+            className="text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+            onClick={logout}
+            aria-label="Logout"
+          >
+            <LogOutIcon className="size-5" />
+          </button>
 
-            {/* SOUND TOGGLE BTN */}
-            <button
-              className="text-slate-400 hover:text-slate-200 transition-colors"
-              onClick={() => {
-                // play click sound before toggling
-                if (isSoundEnabled) {
-                  mouseClickSound.currentTime = 0; // reset to start
-                  mouseClickSound
-                    .play()
-                    .catch((error) => console.log("Audio play failed:", error));
-                }
-                toggleSound();
-              }}
-            >
-              {isSoundEnabled ? (
-                <Volume2Icon className="size-5" />
-              ) : (
-                <VolumeOffIcon className="size-5" />
-              )}
-            </button>
-          </div>
+          {/* SOUND TOGGLE BTN */}
+          <button
+            className="text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+            aria-label="Toggle sound"
+            onClick={() => {
+              // play click sound before toggling
+              if (isSoundEnabled) {
+                mouseClickSound.currentTime = 0; // reset to start
+                mouseClickSound
+                  .play()
+                  .catch((error) => console.log("Audio play failed:", error));
+              }
+              toggleSound();
+            }}
+          >
+            {isSoundEnabled ? (
+              <Volume2Icon className="size-5" />
+            ) : (
+              <VolumeOffIcon className="size-5" />
+            )}
+          </button>
         </div>
       </div>
     </div>
