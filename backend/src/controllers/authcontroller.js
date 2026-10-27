@@ -1,4 +1,3 @@
-import { json } from "stream/consumers";
 import { sendWelcomeEmail } from "../emails/emailhandler.js";
 import { ENV } from "../lib/env.js";
 import { genrateToken } from "../lib/utils.js";

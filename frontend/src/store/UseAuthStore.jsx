@@ -37,7 +37,7 @@ export const useAuthStore = create((set, get) => ({
 
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data.message || "Something went wrong");
     } finally {
       set({ isSigningUp: false });
     }
@@ -53,7 +53,7 @@ export const useAuthStore = create((set, get) => ({
 
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data.message || "Something went wrong");
     } finally {
       set({ isLoggingIn: false });
     }
@@ -79,7 +79,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Profile Update Successfully");
     } catch (error) {
       console.log("Error in update Profile: ", error);
-      toast.error(error.response.data.message);
+      toast.error(error.response.data.message || "Something went wrong");
     } finally{
     set({isUpdatingProfileImg: false})
     }
