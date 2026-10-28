@@ -14,12 +14,23 @@ export const useChatStore = create((set, get) => ({
   isSoundEnabled: JSON.parse(localStorage.getItem("isSoundEnabled")) === true,
 
   toggleSound: () => {
-    localStorage.setItem("isSoundEnabled", !get().isSoundEnabled);
-    set({ isSoundEnabled: !get().isSoundEnabled });
+    const nextState = !get().isSoundEnabled;
+    localStorage.setItem("isSoundEnabled", nextState);
+    set({ isSoundEnabled: nextState });
   },
 
   setActiveTab: (tab) => set({ activeTab: tab }),
   setSelectedUser: (selectedUser) => set({ selectedUser }),
+
+  resetChat: () => {
+    set({
+      allContacts: [],
+      chats: [],
+      messages: [],
+      selectedUser: null,
+      activeTab: "chats",
+    });
+  },
 
   getAllContacts: async () => {
     set({ isUsersLoading: true });
@@ -28,18 +39,19 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get("/messages/contacts");
       set({ allContacts: res.data });
     } catch (error) {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isUsersLoading: false });
     }
   },
+
   getMyChatPartners: async () => {
     set({ isUsersLoading: true });
     try {
       const res = await axiosInstance.get("/messages/chats");
       set({ chats: res.data });
     } catch (error) {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isUsersLoading: false });
     }
@@ -51,7 +63,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get(`/messages/${userId}`);
       set({ messages: res.data });
     } catch (error) {
-      toast.error(error.response?.data?.message || "something went wrong");
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isMessagesLoading: false });
     }
@@ -86,7 +98,7 @@ export const useChatStore = create((set, get) => ({
       });
     } catch (error) {
       set({ messages: get().messages.filter((m) => m._id !== tempId) });
-      toast.error(error.response?.data?.message || "something went wrong");
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
   },
 

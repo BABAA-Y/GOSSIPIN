@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
-import io from 'socket.io-client'
+import io from 'socket.io-client';
+import { useChatStore } from "./UseChatStore";
 
 const BASE_URL = import.meta.env.MODE === 'development' ? "http://localhost:3000" : "/";
 
@@ -37,7 +38,7 @@ export const useAuthStore = create((set, get) => ({
 
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isSigningUp: false });
     }
@@ -53,18 +54,19 @@ export const useAuthStore = create((set, get) => ({
 
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isLoggingIn: false });
     }
   },
 
-  logout: async (data) => {
+  logout: async () => {
     try {
       await axiosInstance.post("/auth/logout");
       set({ authUser: null });
       toast.success("Logged out successfully");
       get().disconnectSocket();
+      useChatStore.getState().resetChat();
     } catch (error) {
       toast.error("Error logging out");
       console.log("logout error", error);
@@ -72,40 +74,41 @@ export const useAuthStore = create((set, get) => ({
   },
 
   updateProfile: async (data) => {
-    set({isUpdatingProfileImg: true})
+    set({ isUpdatingProfileImg: true });
     try {
       const res = await axiosInstance.put("/auth/update-profile", data);
       set({ authUser: res.data });
       toast.success("Profile Update Successfully");
+      return res.data;
     } catch (error) {
       console.log("Error in update Profile: ", error);
-      toast.error(error.response.data.message || "Something went wrong");
-    } finally{
-    set({isUpdatingProfileImg: false})
+      toast.error(error.response?.data?.message || "Something went wrong");
+      throw error;
+    } finally {
+      set({ isUpdatingProfileImg: false });
     }
   },
 
   connectSocket: () => {
-    const {authUser} = get()
-    if(!authUser || get().socket?.connected) return
+    const { authUser } = get();
+    if (!authUser || get().socket?.connected) return;
 
     const socket = io(BASE_URL, {
-      withCredentials: true
-  })
+      withCredentials: true,
+    });
 
-  socket.connect()
+    socket.connect();
 
-  set({socket})
+    set({ socket });
 
-  // listen for online users events
-
-  socket.on("getOnlineUsers", (userIds) => {
-    set({onlineUsers: userIds})
-  })
+    // listen for online users events
+    socket.on("getOnlineUsers", (userIds) => {
+      set({ onlineUsers: userIds });
+    });
   },
 
   disconnectSocket: () => {
-    if(get().socket?.connected) get().socket.disconnect();
+    if (get().socket?.connected) get().socket.disconnect();
+    set({ socket: null, onlineUsers: [] });
   },
-
 }));

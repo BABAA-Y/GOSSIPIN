@@ -1,7 +1,7 @@
 import cloudinary from "../lib/cloudinary.js";
 import { getReciverScoketId, io } from "../lib/socket.js";
 import Message from "../models/message.js";
-import User from "../models/user.js";
+import User from "../models/User.js";
 
 export const getAllContacts = async (req, res) => {
   try {
@@ -43,14 +43,14 @@ export const sendMessage = async (req, res) => {
     const senderId = req.user._id;
 
     if (!text && !image) {
-      return res.status(400).json({message: "Text or image is required. "});
+      return res.status(400).json({ message: "Text or image is required. " });
     }
     if (senderId.equals(receiverId)) {
-      return res.status(400).json({message: "Cannot send messages to yourself. "});
+      return res.status(400).json({ message: "Cannot send messages to yourself. " });
     }
-    const receiverExists = await User.exists({_id: receiverId})
+    const receiverExists = await User.exists({ _id: receiverId });
     if (!receiverExists) {
-      return res.status(400).json({message: "Reciver not found. "});
+      return res.status(400).json({ message: "Reciver not found. " });
     }
 
     let imageUrl;
@@ -67,10 +67,10 @@ export const sendMessage = async (req, res) => {
     });
 
     await newMessage.save();
-    
-    const receiverSocketId = getReciverScoketId(receiverId);
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", newMessage)
+
+    const receiverSocketIds = getReciverScoketId(receiverId);
+    if (receiverSocketIds && receiverSocketIds.length > 0) {
+      io.to(receiverSocketIds).emit("newMessage", newMessage);
     }
     res.status(201).json(newMessage);
   } catch (error) {
@@ -83,7 +83,7 @@ export const getChatPartner = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
 
-    // find all the messages where the  logged in user is either sender or reciver
+    // find all the messages where the logged in user is either sender or reciver
     const message = await Message.find({
       $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }],
     });
@@ -98,7 +98,7 @@ export const getChatPartner = async (req, res) => {
       ),
     ];
 
-    const chatPartners = await User.find({_id: {$in:chatPartnerIds}}).select("-password")
+    const chatPartners = await User.find({ _id: { $in: chatPartnerIds } }).select("-password");
 
     res.status(200).json(chatPartners);
   } catch (error) {

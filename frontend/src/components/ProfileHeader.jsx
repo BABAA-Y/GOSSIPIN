@@ -5,6 +5,7 @@ import {
   VolumeOffIcon,
   Loader2Icon,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAuthStore } from "../store/UseAuthStore";
 import { useChatStore } from "../store/UseChatStore";
 
@@ -18,17 +19,33 @@ function ProfileHeader() {
 
   const fileInputRef = useRef(null);
 
-  const handleImageUplode = (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
 
     reader.onloadend = async () => {
       const base64Image = reader.result;
-      setSelectedImg(base64Image);
-      await updateProfile({ profilePic: base64Image });
+      try {
+        await updateProfile({ profilePic: base64Image });
+        setSelectedImg(base64Image);
+      } catch (err) {
+        // Handled in store toast
+      } finally {
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
     };
   };
 
@@ -71,7 +88,7 @@ function ProfileHeader() {
               type="file"
               accept="image/*"
               ref={fileInputRef}
-              onChange={handleImageUplode}
+              onChange={handleImageUpload}
               className="hidden"
             />
           </div>

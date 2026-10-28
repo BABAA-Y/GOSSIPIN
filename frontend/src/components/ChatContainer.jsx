@@ -60,6 +60,11 @@ function ChatContainer() {
                   >
                     {msg.image && (
                       <img
+                        onLoad={() =>
+                          messageEndRef.current?.scrollIntoView({
+                            behavior: "smooth",
+                          })
+                        }
                         src={msg.image}
                         alt="Shared"
                         className="rounded-lg h-48 object-cover"
