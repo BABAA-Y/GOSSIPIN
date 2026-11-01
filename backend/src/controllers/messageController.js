@@ -27,6 +27,7 @@ export const getMessagesByUserId = async (req, res) => {
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId },
       ],
+        deletedBy: { $ne: myId },
     });
 
     res.status(200).json(messages);
@@ -106,3 +107,86 @@ export const getChatPartner = async (req, res) => {
     res.status(500).json({ message: "internal server error" });
   }
 };
+
+export const deleteMessageForEveryone = async (req, res) => {
+  const {id: messageId} = req.params;
+  const myId = req.user._id;
+
+  try {
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({message: "Message not found"})
+    }
+
+    if (message.senderId.toString() !== myId.toString()) {
+      return res.status(403).json({message: "You can only delete your own messages for everyone"})
+    }
+
+    await Message.findByIdAndDelete(messageId);
+
+    const receiverSocketIds = getReciverScoketId(message.receiverId);
+    if (receiverSocketIds && receiverSocketIds.length > 0) {
+      io.to(receiverSocketIds).emit("messageDeleted", messageId)
+    }
+
+    res.status(200).json({message: "message deleted successfully", messageId})
+  } catch (error) {
+    console.log("Error in deleteMessageForEveryone controller: ", error.message);
+    res.status(500).json({ message: "internal server error" });
+  }
+}
+export const deleteMessageForMe = async (req, res) => {
+  const { id: messageId } = req.params;
+  const myId = req.user._id;
+
+  try {
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({message: "Message not found"})
+    }
+
+    const isParticipant = message.senderId.toString() === myId.toString() || message.receiverId.toString() === myId.toString();
+
+    if(!isParticipant) {
+      return res.status(403).json({message: 'you are not part of this conversation'})
+    }
+    
+    const alreadyDeleted = message.deletedBy.some(id => id.toString() === myId.toString());
+
+    if (!alreadyDeleted) {
+      message.deletedBy.push(myId);
+      await message.save()
+    }
+
+    res.status(200).json({ message: "Message deleted for you", messageId });
+  } catch (error) {
+        console.log("Error in deleteMessageForMe controller: ", error.message);
+        res.status(500).json({ message: "internal server error" });
+  }
+}
+  export const clearChat = async (req, res) => { 
+    const { id: userToChatId } = req.params;
+    const myId = req.user._id;
+
+    try {
+
+      await Message.updateMany(
+      // Filter: Find all messages between us
+      {
+        $or: [
+          { senderId: myId, receiverId: userToChatId },
+          { senderId: userToChatId, receiverId: myId },
+        ],
+      },
+      // Update: Add myId to the deletedBy list
+      {
+        $addToSet: { deletedBy: myId },
+      }
+    );
+      res.status(200).json({ message: "Chat cleared successfully" });
+    } catch (error) {
+          console.log("Error in clearChat controller: ", error.message);
+          res.status(500).json({ message: "internal server error" });
+    }
+  }

@@ -102,32 +102,68 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  subscribeToMessages: () => {
-    const { selectedUser, isSoundEnabled } = get();
-    if (!selectedUser) return;
-
-    const socket = useAuthStore.getState().socket;
-
-    socket?.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser =
-        newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
-      const currentMessages = get().messages;
-      set({ messages: [...currentMessages, newMessage] });
-
-      if (isSoundEnabled) {
-        const notificationAudio = new Audio("/sounds/notification.mp3");
-
-        notificationAudio.currentTime = 0;
-        notificationAudio
-          .play()
-          .catch((e) => console.log("Audio Play failed", e));
-      }
-    });
+  deleteMessageForEveryone: async (messageId) => {
+    try {
+      await axiosInstance.delete(`/messages/delete-everyone/${messageId}`);
+      set({ messages: get().messages.filter((m) => m._id !== messageId) });
+      toast.success("message deleted for everyone");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    }
+  },
+  deleteMessageForMe: async (messageId) => {
+    try {
+      await axiosInstance.delete(`/messages/delete-me/${messageId}`);
+      set({ messages: get().messages.filter((m) => m._id !== messageId) });
+      toast.success("message deleted for you");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    }
+  },
+  clearChat: async (userToChatId) => {
+    try {
+      await axiosInstance.delete(`/messages/clear/${userToChatId}`);
+      set({ messages: [] });
+      toast.success("Chat Cleared");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    }
   },
 
-  unsubscribeFromMessages: () => {
-    const socket = useAuthStore.getState().socket;
-    socket?.off("newMessage");
-  },
+      subscribeToMessages: () => {
+        const { selectedUser, isSoundEnabled } = get();
+        if (!selectedUser) return;
+
+        const socket = useAuthStore.getState().socket;
+
+        // 1. Listen for new messages
+        socket?.on("newMessage", (newMessage) => {
+          const isMessageSentFromSelectedUser =
+            newMessage.senderId === selectedUser._id;
+          if (!isMessageSentFromSelectedUser) return;
+          const currentMessages = get().messages;
+          set({ messages: [...currentMessages, newMessage] });
+
+          if (isSoundEnabled) {
+            const notificationAudio = new Audio("/sounds/notification.mp3");
+            notificationAudio.currentTime = 0;
+            notificationAudio
+              .play()
+              .catch((e) => console.log("Audio Play failed", e));
+          }
+        });
+
+        // 2. Listen for deleted messages
+        socket?.on("messageDeleted", (deletedMessageId) => {
+          set({
+            messages: get().messages.filter((m) => m._id !== deletedMessageId),
+          });
+        });
+      },
+
+      unsubscribeFromMessages: () => {
+        const socket = useAuthStore.getState().socket;
+        socket?.off("newMessage");
+        socket?.off("messageDeleted");
+      },
 }));
