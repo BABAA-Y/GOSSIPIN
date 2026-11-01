@@ -20,6 +20,12 @@ const messageSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+
+    deletedBy: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: []
+    },
   },
   { timestamps: true },
 );
